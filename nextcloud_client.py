@@ -1,45 +1,64 @@
+# nextcloud_client.py
+
 import os
-from webdav3.client import Client
-from typing import List, Dict
-import tempfile
+import requests
+from requests.auth import HTTPBasicAuth
+from dotenv import load_dotenv
+import xml.etree.ElementTree as ET
+
+load_dotenv()
 
 class NextCloudClient:
-    def __init__(self, share_url: str):
-        """Initialize NextCloud client with the share URL."""
-        self.share_url = share_url
-        self.webdav_options = {
-            'webdav_hostname': "https://cloud.monadical.com/public.php/webdav",
-            'webdav_token': 'EE7yBz8tF85kMsw'  # Token from the share URL
+    def __init__(self):
+        self.base_url = os.getenv("NEXTCLOUD_URL").rstrip("/")
+        self.auth = HTTPBasicAuth(
+            os.getenv("NEXTCLOUD_USER"),
+            os.getenv("NEXTCLOUD_PASSWORD")
+        )
+
+    def list_files(self, path: str = ""):
+        url = f"{self.base_url}/{path}".rstrip("/")
+        headers = {
+            "Depth": "1",
+            "Content-Type": "application/xml"
         }
-        self.client = Client(self.webdav_options)
-        
-    def list_files(self) -> List[str]:
-        """List all files in the shared folder."""
-        try:
-            files = self.client.list()
-            return [f for f in files if not f.endswith('/')]  # Filter out directories
-        except Exception as e:
-            print(f"Error listing files: {e}")
-            return []
+        body = """<?xml version="1.0"?>
+        <d:propfind xmlns:d="DAV:">
+            <d:prop>
+                <d:displayname/>
+            </d:prop>
+        </d:propfind>"""
 
-    def read_file(self, file_path: str) -> str:
-        """Read the content of a file from NextCloud."""
-        try:
-            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-                self.client.download_file(file_path, temp_file.name)
-                with open(temp_file.name, 'r') as f:
-                    content = f.read()
-                os.unlink(temp_file.name)
-                return content
-        except Exception as e:
-            print(f"Error reading file {file_path}: {e}")
-            return ""
+        response = requests.request("PROPFIND", url, headers=headers, data=body, auth=self.auth)
 
-    def build_context(self) -> Dict[str, str]:
-        """Build context from all files in the shared folder."""
-        context = {}
-        files = self.list_files()
-        for file_path in files:
-            content = self.read_file(file_path)
-            context[file_path] = content
-        return context
+        if response.status_code != 207:
+            raise Exception(f"Error al listar archivos: {response.status_code} {response.text}")
+
+        return self._parse_file_list(response.text)
+
+    def _parse_file_list(self, xml_response: str):
+        ns = {"d": "DAV:"}
+        tree = ET.fromstring(xml_response)
+        items = []
+        for response in tree.findall("d:response", ns):
+            href = response.find("d:href", ns)
+            name = response.find("d:propstat/d:prop/d:displayname", ns)
+            if href is not None and name is not None:
+                # Omitimos la carpeta raíz (misma URL base)
+                if name.text and name.text != "/":
+                    items.append(name.text)
+        return items
+
+    def rename_file(self, old_name: str, new_name: str):
+        src = f"{self.base_url}/{old_name}".rstrip("/")
+        dst = f"{self.base_url}/{new_name}".rstrip("/")
+
+        headers = {
+            "Destination": dst,
+            "Overwrite": "F"
+        }
+
+        response = requests.request("MOVE", src, headers=headers, auth=self.auth)
+
+        if response.status_code not in [201, 204]:
+            raise Exception(f"Error al renombrar archivo: {response.status_code} {response.text}")

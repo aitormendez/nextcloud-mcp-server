@@ -1,22 +1,14 @@
 from fastmcp import FastMCP
 from typing import List
+from nextcloud_client import NextCloudClient
 
-# Crear el servidor
 mcp = FastMCP(name="Nextcloud MCP Server")
+nextcloud = NextCloudClient()
 
-# Cliente simulado de Nextcloud
-class MockNextCloudClient:
-    def list_files(self) -> List[str]:
-        return ["archivo1.txt", "documento2.pdf", "imagen3.jpg"]
-
-nextcloud_client = MockNextCloudClient()
-
-# Herramienta MCP
 @mcp.tool
 def list_files() -> List[str]:
-    """Lista los archivos disponibles en la carpeta de Nextcloud (simulada)."""
-    return nextcloud_client.list_files()
+    """Lista los archivos reales en la instancia de Nextcloud."""
+    return nextcloud.list_files()
 
-# Ejecutar el servidor
 if __name__ == "__main__":
     mcp.run()
