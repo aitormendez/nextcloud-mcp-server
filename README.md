@@ -28,9 +28,9 @@ pip install -r requirements.txt
 Crea un archivo `.env` en la raíz con las credenciales de acceso a Nextcloud:
 
 ```env
-NEXTCLOUD_URL=https://materiales.e451.net/remote.php/dav/files/admin/
-NEXTCLOUD_USER=admin
-NEXTCLOUD_PASSWORD=contraseña_o_token_app
+NEXTCLOUD_URL=https://your-nextcloud-instance/remote.php/dav/files/your-username/
+NEXTCLOUD_USER=your-username
+NEXTCLOUD_PASSWORD=your-password-or-app-token
 ```
 
 ## Uso local
