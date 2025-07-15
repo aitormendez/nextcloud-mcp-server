@@ -5,6 +5,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 from dotenv import load_dotenv
 import xml.etree.ElementTree as ET
+from urllib.parse import quote
 
 load_dotenv()
 
@@ -49,12 +50,19 @@ class NextCloudClient:
                     items.append(name.text)
         return items
 
+    def sanitize_path(self, path: str) -> str:
+        prefix = "/remote.php/dav/files/admin/"
+        if path.startswith(prefix):
+            return path[len(prefix):]
+        return path
+
     def rename_file(self, old_name: str, new_name: str):
-        src = f"{self.base_url}/{old_name}".rstrip("/")
-        dst = f"{self.base_url}/{new_name}".rstrip("/")
+        src = f"{self.base_url}/{self.sanitize_path(old_name)}".rstrip("/")
+        dst = f"{self.base_url}/{self.sanitize_path(new_name)}".rstrip("/")
 
         headers = {
-            "Destination": dst,
+            # Evitamos sobrecodificar el esquema "https://"
+            "Destination": quote(dst, safe=":/"),
             "Overwrite": "F"
         }
 
