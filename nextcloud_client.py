@@ -70,3 +70,52 @@ class NextCloudClient:
 
         if response.status_code not in [201, 204]:
             raise Exception(f"Error al renombrar archivo: {response.status_code} {response.text}")
+
+    def read_text_file(self, path: str, max_chars: int = 5000) -> str:
+        """Lee un archivo de texto desde Nextcloud usando WebDAV y devuelve su contenido como string."""
+        url = f"{self.base_url}/{self.sanitize_path(path)}"
+        response = requests.get(url, auth=self.auth)
+
+        if response.status_code != 200:
+            raise Exception(f"Error al leer archivo: {response.status_code} {response.text}")
+
+        if path.lower().endswith(".epub"):
+            return self.read_epub_text(path, max_chars)
+        return response.text[:max_chars]
+
+    def read_epub_text(self, path: str, max_chars: int = 5000) -> str:
+        """
+        Descarga un archivo EPUB desde Nextcloud y devuelve el contenido de texto plano extraído.
+        Solo extrae el contenido de las primeras páginas hasta `max_chars`.
+        """
+        import tempfile
+        import zipfile
+        from bs4 import BeautifulSoup
+
+        # Descargar el archivo EPUB desde Nextcloud
+        url = f"{self.base_url}/{self.sanitize_path(path)}"
+        response = requests.get(url, auth=self.auth)
+
+        if response.status_code != 200:
+            raise Exception(f"Error al descargar EPUB: {response.status_code} {response.text}")
+
+        # Guardar el EPUB temporalmente para extraerlo
+        with tempfile.NamedTemporaryFile(suffix=".epub", delete=False) as tmp_file:
+            tmp_file.write(response.content)
+            tmp_path = tmp_file.name
+
+        text_content = ""
+        try:
+            with zipfile.ZipFile(tmp_path, 'r') as z:
+                # Buscar archivos HTML o XHTML para extraer el contenido textual
+                for name in z.namelist():
+                    if name.endswith(('.html', '.xhtml')):
+                        with z.open(name) as f:
+                            soup = BeautifulSoup(f.read(), "html.parser")
+                            text_content += soup.get_text(separator="\n", strip=True)
+                            if len(text_content) >= max_chars:
+                                break
+        finally:
+            os.remove(tmp_path)
+
+        return text_content[:max_chars]
