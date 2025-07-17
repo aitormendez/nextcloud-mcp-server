@@ -1,0 +1,73 @@
+Quiero cambiar los nombres de los archivos de mi instancia de nextcloud.
+
+Los archivos que quiero cambiar son los que encuentras en:
+
+Materiales espirituales/Autores/
+
+Empieza a renombrar sólo los primeros cinco autores: desde Alan Watts hasta Alexander Lowen, ambos inclusive.
+
+La estructura del nombre deberá ser:
+
+Autor - Título (Año).ext
+
+Por ejemplo:
+
+Krishnamurti - La libertad primera y última (1954).pdf
+
+Considera usar las herramientas de ebook-mcp si son epubs.
+
+Considera usar la herramienta read_pdf si son PDFs.
+
+Si no puedes obtener algún dato como el año, haz una búsqueda en internet. Si finalmente no obtienes el dato, omítelo.
+
+Nunca utilices la fecha de creación del archivo como la fecha de publicación del libro. Nunca coincidirán.
+
+Tengo sincronizada la biblioteca de nextcloud en mi sistema de archivos. Puedes acceder a esos títulos aquí para revisarlos y obtener información sobre ellos:
+
+/Volumes/Materiales/Nextcloud/Materiales\ espirituales/Autores/Alice\ Bailey
+
+Usa filesystem__read_file
+
+Pero debes renombrarlos en nextcloud usando la herramienta rename_file del MCP nextcloud, no en el sistema de archivos, para que no se pierdan las etiquetas de los archivos en nexctcloud.
+
+
+
+——
+
+
+Quiero cambiar los nombres de los archivos de mi instancia de nextcloud que se encuentran en Materiales espirituales/Autores/Carlos Castaneda/
+
+Algunos títulos están bien, con esta estructura:
+
+Autor - Título (Año).ext
+
+Por ejemplo
+
+Carlos Castaneda - El don del aguila (1980).epub
+
+Pero otros no, se ajustan a esta otra estructura, que es incorrecta:
+
+Carlos-Castaneda-El-arte-de-ensonar-1993.epub
+
+Corríge los que están mal. No hace fata que mires dentro del archivo, deduce el nombre correcto a partir de su nombre actual
+
+
+---
+
+
+
+Probar la herramienta `propose_tags` con el título “Verdades sobre el Tíbet, los Dalai Lamas y el budismo” y el archivo ubicado en:
+
+📄 `/Volumes/Materiales/Nextcloud/Materiales espirituales/Autores/Bernard Baudouin/Verdades_sobre_el_Tibet_los_dalai_lamas_y_el_budismo.epub`
+
+Usa como referencia el archivo de etiquetas:
+
+📄 `/Volumes/Materiales/Nextcloud/Materiales espirituales/Etiquetas de la biblioteca.md`
+
+Primero, utiliza `filesystem__read_file` para leer el contenido del archivo de etiquetas. Luego, llama a `propose_tags` pasando como argumentos:
+
+- `title`: `"Verdades sobre el Tíbet, los Dalai Lamas y el budismo"`
+- `nextcloud_path`: `"Materiales espirituales/Autores/Bernard Baudouin/Verdades_sobre_el_Tibet_los_dalai_lamas_y_el_budismo.epub"`
+- `tag_criteria_md`: *(el contenido leído del archivo `.md`)*
+
+⚠️ Asegúrate de que los espacios estén escapados o reemplazados si lo ejecutas directamente desde terminal o dentro de un script.

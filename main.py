@@ -1,8 +1,11 @@
+from fastapi import FastAPI
 from fastmcp import FastMCP
 from typing import List
 from nextcloud_client import NextCloudClient
 
-mcp = FastMCP(name="Nextcloud MCP Server")
+app = FastAPI(title="Nextcloud MCP", version="1.0.0")
+mcp = FastMCP.from_fastapi(app=app)
+
 nextcloud = NextCloudClient()
 
 @mcp.tool
