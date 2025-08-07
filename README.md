@@ -8,8 +8,11 @@ Actualmente implementa las siguientes herramientas MCP:
 
 - `list_files(path: str = "") -> List[str]`: Lista los archivos en una ruta determinada de Nextcloud.
 - `rename_file(old_name: str, new_name: str) -> str`: Renombra un archivo en Nextcloud conservando etiquetas y metadatos.
+- `tag_file(path: str, tag: str) -> str`: Asigna la etiqueta **tag** al archivo **path**. Si la etiqueta no existe se crea automáticamente.
+- `list_tags() -> List[str]`: Devuelve la lista de todas las etiquetas (system tags) disponibles en la instancia de Nextcloud.
+- `file_tags(path: str) -> List[str]`: Devuelve las etiquetas asignadas al archivo indicado por **path**.
 
-Más herramientas pueden añadirse progresivamente (lectura de etiquetas, escritura de etiquetas, eliminación, creación de carpetas, etc.).
+Más herramientas se irán añadiendo progresivamente (eliminación, creación de carpetas, previsualización de archivos, etc.).
 
 ## Requisitos
 

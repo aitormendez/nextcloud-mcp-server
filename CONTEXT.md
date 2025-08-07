@@ -67,6 +67,59 @@ Propone etiquetas temáticas para un archivo dado, basado en su contenido y en l
 
 ---
 
+### `tag_file`
+
+**Descripción:**  
+Asigna una etiqueta existente (o la crea si no existe) a un archivo en Nextcloud.
+
+**Argumentos:**
+
+- `path` (string): Ruta relativa del archivo al que se desea aplicar la etiqueta.
+- `tag` (string): Nombre de la etiqueta.
+
+**Uso típico:**  
+Tras recibir una propuesta de etiquetas (por ejemplo, desde `propose_tags`), se llama a `tag_file` para aplicar la etiqueta seleccionada al archivo.
+
+**Estado:**  
+✅ Implementada y funcional (usa WebDAV `PUT /systemtags-relations/files/{fileid}/{tagid}`).
+
+---
+
+### `list_tags`
+
+**Descripción:**  
+Devuelve la lista completa de etiquetas (system tags) configuradas en la instancia de Nextcloud.
+
+**Argumentos:**  
+_(ninguno)_
+
+**Uso típico:**  
+Para verificar las etiquetas disponibles antes de proponer o asignar nuevas, evitando duplicados por mayúsculas o errores tipográficos.
+
+**Estado:**  
+✅ Implementada y funcional (WebDAV `PROPFIND /systemtags`).
+
+---
+
+### `file_tags`
+
+**Descripción:**  
+Recupera las etiquetas asignadas a un archivo concreto.
+
+**Argumentos:**
+
+- `path` (string): Ruta relativa del archivo dentro de Nextcloud.
+
+**Uso típico:**  
+Comprobar si un archivo ya tiene ciertas etiquetas antes de añadir nuevas para evitar redundancias.
+
+**Estado:**  
+✅ Implementada y funcional (WebDAV `PROPFIND /systemtags-relations/files/{fileid}`).
+
+---
+
+---
+
 ## 📌 Estado actual
 
 - El MCP está operativo y registrado en Gemini CLI como `nextcloud-mcp-server`.
@@ -77,6 +130,7 @@ Propone etiquetas temáticas para un archivo dado, basado en su contenido y en l
 - Se ha detectado un problema: algunas etiquetas propuestas (ej. “Exilio”) no cumplen los criterios establecidos:
   - Deben tener potencial de aplicarse a más de un libro.
   - Deben cubrir temas no contemplados por etiquetas ya existentes.
+- Nuevas herramientas `tag_file`, `list_tags` y `file_tags` añadidas para gestionar y consultar etiquetas de manera automática.
 
 **Próximo paso:**
 
