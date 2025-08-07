@@ -4,7 +4,9 @@ Los archivos que quiero cambiar son los que encuentras en:
 
 Materiales espirituales/Autores/
 
-Empieza a renombrar sólo los primeros cinco autores: desde Alan Watts hasta Alexander Lowen, ambos inclusive.
+Empieza a renombrar a partir del autor Sergi Torres, inclusive, en adelante. Cuando termines un autor elige el siguiente de la lista Sin preguntar.
+
+Revisa los títulos de Drunvalo Melchizedek porque ya tiene algunos títulos bien estructurados.
 
 La estructura del nombre deberá ser:
 
@@ -22,34 +24,15 @@ Si no puedes obtener algún dato como el año, haz una búsqueda en internet. Si
 
 Nunca utilices la fecha de creación del archivo como la fecha de publicación del libro. Nunca coincidirán.
 
+Si encuentras títulos duplicados, elimina un duplicado sin preguntar. Para eliminarlo, deberás hacerlo en la copia local sincronizada, no en la instancia de nexcloud, porque no tienes una herramienta para eliminar archivos de nextcloud
+
 Tengo sincronizada la biblioteca de nextcloud en mi sistema de archivos. Puedes acceder a esos títulos aquí para revisarlos y obtener información sobre ellos:
 
-/Volumes/Materiales/Nextcloud/Materiales\ espirituales/Autores/Alice\ Bailey
+/Volumes/Materiales/Nextcloud/Materiales\ espirituales/Autores/
 
 Usa filesystem__read_file
 
 Pero debes renombrarlos en nextcloud usando la herramienta rename_file del MCP nextcloud, no en el sistema de archivos, para que no se pierdan las etiquetas de los archivos en nexctcloud.
-
-
-
-——
-
-
-Quiero cambiar los nombres de los archivos de mi instancia de nextcloud que se encuentran en Materiales espirituales/Autores/Carlos Castaneda/
-
-Algunos títulos están bien, con esta estructura:
-
-Autor - Título (Año).ext
-
-Por ejemplo
-
-Carlos Castaneda - El don del aguila (1980).epub
-
-Pero otros no, se ajustan a esta otra estructura, que es incorrecta:
-
-Carlos-Castaneda-El-arte-de-ensonar-1993.epub
-
-Corríge los que están mal. No hace fata que mires dentro del archivo, deduce el nombre correcto a partir de su nombre actual
 
 
 ---

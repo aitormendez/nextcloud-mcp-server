@@ -1,11 +1,8 @@
-from fastapi import FastAPI
 from fastmcp import FastMCP
 from typing import List
 from nextcloud_client import NextCloudClient
 
-app = FastAPI(title="Nextcloud MCP", version="1.0.0")
-mcp = FastMCP.from_fastapi(app=app)
-
+mcp = FastMCP("Nextcloud MCP")
 nextcloud = NextCloudClient()
 
 @mcp.tool
@@ -19,18 +16,15 @@ def rename_file(old_name: str, new_name: str) -> str:
     nextcloud.rename_file(old_name, new_name)
     return f"Archivo renombrado de '{old_name}' a '{new_name}'"
 
-from tools.propose_tags import propose_tags as _propose_tags
 
-mcp.tool(_propose_tags)
-
-import signal
-import sys
-
-def shutdown_handler(sig, frame):
-    print("\n🛑 MCP detenido limpiamente.")
-    sys.exit(0)
-
-signal.signal(signal.SIGINT, shutdown_handler)
+# Herramienta para etiquetar archivos
+@mcp.tool
+def tag_file(path: str, tag: str) -> str:
+    """Asigna una etiqueta a un archivo en Nextcloud.  
+    Si la etiqueta no existe, se creará automáticamente.
+    """
+    nextcloud.tag_file(path, tag)
+    return f"Etiqueta '{tag}' aplicada a '{path}'"
 
 if __name__ == "__main__":
     mcp.run()
