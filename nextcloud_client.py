@@ -194,6 +194,103 @@ class NextCloudClient:
                 f"Error al etiquetar archivo: {resp.status_code} {resp.text}"
             )
 
+    # ---------------------------------------------------------------------
+    # Nuevas utilidades de consulta de etiquetas
+    # ---------------------------------------------------------------------
+
+    def list_tags(self) -> list[str]:
+        """
+        Devuelve una lista con todas las etiquetas (system tags) existentes en la instancia.
+        """
+        url = f"{self.root_url}/remote.php/dav/systemtags"
+        headers = {"Depth": "1", "Content-Type": "application/xml"}
+        body = """<?xml version="1.0"?>
+        <d:propfind xmlns:d="DAV:" xmlns:oc="http://owncloud.org/ns">
+            <d:prop>
+                <oc:display-name/>
+            </d:prop>
+        </d:propfind>"""
+
+        resp = requests.request("PROPFIND", url, headers=headers, data=body, auth=self.auth)
+        if resp.status_code != 207:
+            raise Exception(f"Error al listar etiquetas: {resp.status_code} {resp.text}")
+
+        ns = {"d": "DAV:", "oc": "http://owncloud.org/ns"}
+        tree = ET.fromstring(resp.text)
+        tags = []
+        for response in tree.findall("d:response", ns):
+            name_elem = response.find("d:propstat/d:prop/oc:display-name", ns)
+            if name_elem is not None and name_elem.text:
+                tags.append(name_elem.text)
+        return sorted(tags, key=str.lower)
+
+    def _map_tag_ids(self) -> dict[int, str]:
+        """
+        Devuelve un diccionario {id: nombre} con todas las etiquetas del sistema.
+        """
+        url = f"{self.root_url}/remote.php/dav/systemtags"
+        headers = {"Depth": "1", "Content-Type": "application/xml"}
+        body = """<?xml version="1.0"?>
+        <d:propfind xmlns:d="DAV:" xmlns:oc="http://owncloud.org/ns">
+            <d:prop>
+                <oc:display-name/>
+            </d:prop>
+        </d:propfind>"""
+
+        resp = requests.request("PROPFIND", url, headers=headers, data=body, auth=self.auth)
+        if resp.status_code != 207:
+            raise Exception(f"Error al listar etiquetas: {resp.status_code} {resp.text}")
+
+        ns = {"d": "DAV:", "oc": "http://owncloud.org/ns"}
+        tree = ET.fromstring(resp.text)
+        mapping: dict[int, str] = {}
+        for response in tree.findall("d:response", ns):
+            href = response.find("d:href", ns)
+            name_elem = response.find("d:propstat/d:prop/oc:display-name", ns)
+            if href is not None and name_elem is not None and name_elem.text and href.text:
+                # href ejemplo: /remote.php/dav/systemtags/53/
+                tag_id = int(href.text.strip("/").split("/")[-1])
+                mapping[tag_id] = name_elem.text
+        return mapping
+
+    def tags_for_file(self, path: str) -> list[str]:
+        """
+        Devuelve la lista de etiquetas asignadas a un archivo usando PROPFIND
+        sobre /systemtags-relations/files/{fileid}.
+        """
+        file_id = self._get_file_id(path)
+        url = f"{self.root_url}/remote.php/dav/systemtags-relations/files/{file_id}"
+
+        headers = {
+            "Depth": "1",
+            "Content-Type": "application/xml"
+        }
+        # Un PROPFIND vacío nos devuelve los href de las relaciones
+        body = """<?xml version="1.0"?>
+        <d:propfind xmlns:d="DAV:"/>"""
+
+        resp = requests.request("PROPFIND", url, headers=headers, data=body, auth=self.auth)
+
+        if resp.status_code != 207:
+            raise Exception(
+                f"Error al recuperar etiquetas del archivo: {resp.status_code} {resp.text}"
+            )
+
+        tag_map = self._map_tag_ids()
+        tags: list[str] = []
+
+        ns = {"d": "DAV:"}
+        tree = ET.fromstring(resp.text)
+        for response in tree.findall("d:response", ns):
+            href = response.find("d:href", ns)
+            if href is not None and href.text:
+                # href ejemplo: /remote.php/dav/systemtags-relations/files/275849/53
+                tag_id = int(href.text.strip("/").split("/")[-1])
+                if tag_id in tag_map:
+                    tags.append(tag_map[tag_id])
+
+        return sorted(set(tags), key=str.lower)
+
     def read_text_file(self, path: str, max_chars: int = 5000) -> str:
         """Lee un archivo de texto desde Nextcloud usando WebDAV y devuelve su contenido como string."""
         url = f"{self.base_url}/{self.sanitize_path(path)}"

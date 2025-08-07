@@ -26,5 +26,15 @@ def tag_file(path: str, tag: str) -> str:
     nextcloud.tag_file(path, tag)
     return f"Etiqueta '{tag}' aplicada a '{path}'"
 
+@mcp.tool
+def list_tags() -> List[str]:
+    """Devuelve todas las etiquetas (system tags) existentes en la instancia de Nextcloud."""
+    return nextcloud.list_tags()
+
+@mcp.tool
+def file_tags(path: str) -> List[str]:
+    """Devuelve las etiquetas asignadas al archivo indicado por 'path'."""
+    return nextcloud.tags_for_file(path)
+
 if __name__ == "__main__":
     mcp.run()
